@@ -10,6 +10,58 @@ import sys
 
 # group: ('Jeff Carson', 'SC Karaoke] - I Can Only Imagine')
 
+
+class Deduplicator:
+    def __init__(self):
+        self.songs = []
+
+    def add(self, song):
+        self.songs.append(song)
+
+    def build_struct(self, songs):
+        return [{'artist': x.artist, 'title': x.title} for x in self.songs]
+
+    def process(self):
+        # create a Markdown file with artists alphabetical
+        songs_by_artist = {}
+        for song in self.songs:
+            if song.artist not in songs_by_artist:
+                songs_by_artist[song.artist] = []
+            songs_by_artist[song.artist].append(song)
+
+        json_struct = self.build_struct(self.songs)
+        print('Original struct size:', len(json_struct))
+        filtered_json_struct = []
+        seen_before = set()
+        for obj in json_struct:
+            if (obj['artist'], obj['title']) in seen_before:
+                continue
+            else:
+                filtered_json_struct.append(obj)
+                seen_before.add((obj['artist'], obj['title']))
+
+        print('Filtered struct size:', len(filtered_json_struct))
+        with open('/Users/sean/songs.json', 'w') as f:
+            f.write(json.dumps(filtered_json_struct))
+
+        with open('/Users/sean/songs-by-artist.md', 'w') as f:
+            for artist in sorted(songs_by_artist.keys(), key=title_sort_key):
+                f.write(f'### {artist}\n')
+                song_titles = [x.title for x in songs_by_artist[artist]]
+                song_titles = tuple(set(song_titles))
+                ordered_song_titles = sorted(song_titles, key=title_sort_key)
+                for title in ordered_song_titles:
+                    f.write(f'- {title}\n')
+                f.write('\n\n')
+
+        song_titles = tuple(set([(x.title, x.artist) for x in self.songs]))
+        with open('/Users/sean/songs-by-title.md', 'w') as f:
+            for title, artist in sorted(song_titles, key=title_sort_key2):
+                if title.startswith('#'):
+                    title = f'\\#{title[1:]}'
+                f.write(f'- {title} **by** {artist}\n')
+
+
 fixes = {'/Volumes/media/karaoke/Karaoke Collection Part 6 MP3+CDG RAR Archive': []}
 
 split_fixes = {
@@ -497,7 +549,6 @@ class KaraokeSong:
             square_brace_in_name = '[' in name
 
             if m1 is not None:
-                print('group:', m1.groups())
                 name, self.catalog = m1.groups()
             elif square_brace_in_name:
                 self.catalog = None
@@ -541,11 +592,18 @@ def title_sort_key(key):
     return key
 
 
-def build_struct(songs):
-    return [{'artist': x.artist, 'title': x.title} for x in songs]
+def title_sort_key2(key):
+    key = key[0]
+    prefixes = ('A', 'The')
+    for prefix in prefixes:
+        spaced_prefix = prefix + ' '
+        if key.startswith(spaced_prefix):
+            rest = key[len(spaced_prefix):]
+            return f'{rest}, {prefix}'
+    return key
 
 
-def process(path):
+def process(path, deduplicator):
     # store base_name -> (CDGPresenceFlag, MP3PresenceFlag)
     songs = {}
     unknowns = []
@@ -571,36 +629,19 @@ def process(path):
     print(f'Found {len(complete_songs)} complete songs and {len(unknowns)} unknown files.')
     good_songs = [x for x in complete_songs if x.good]
     print(f'Good songs: {len(good_songs)}')
-    # create a Markdown file with artists alphabetical
-    songs_by_artist = {}
+
     for song in good_songs:
-        if song.artist not in songs_by_artist:
-            songs_by_artist[song.artist] = []
-        songs_by_artist[song.artist].append(song)
-    json_struct = build_struct(good_songs)
-    with open('/Users/sean/songs.json', 'w') as f:
-        f.write(json.dumps(json_struct))
-    with open('/Users/sean/songs-by-artist.md', 'w') as f:
-        for artist in sorted(songs_by_artist.keys(), key=title_sort_key):
-            f.write(f'# {artist}\n')
-            song_titles = [x.title for x in songs_by_artist[artist]]
-            ordered_song_titles = sorted(song_titles, key=title_sort_key)
-            for title in ordered_song_titles:
-                f.write(f'- {title}\n')
-            f.write('\n\n')
-            # self.path
-            # self.title
-            # self.artist
-            pass
-        print('First song:', complete_songs[0])
+        deduplicator.add(song)
 
 
 def main(args):
     path1 = '/Volumes/media/karaoke'
     path2 = '/Volumes/media/karaoke2'
-    base_dirs = [path2]
+    base_dirs = [path1, path2]
+    deduplicator = Deduplicator()
     for path in base_dirs:
-        process(path)
+        process(path, deduplicator)
+    deduplicator.process()
 
 
 if __name__ == '__main__':
