@@ -3,7 +3,7 @@ let fuse;
 let songData = [];
 
 // Load the JSON data
-fetch('/songs.json') // Replace with your actual path to the JSON file
+fetch('/songs-9b87b5ea7bb263dd9e35.json') // Replace with your actual path to the JSON file
     .then(response => response.json())
     .then(data => {
         songData = data;
