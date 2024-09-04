@@ -1,0 +1,14 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Your Organization//NONSGML v1.0//EN
+BEGIN:VEVENT
+UID:high-notes-karaoke@example.com
+DTSTAMP:20240904T000000Z
+DTSTART;TZID=America/Los_Angeles:20240904T183000
+DTEND;TZID=America/Los_Angeles:20240904T203000
+RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=WE
+SUMMARY:High Notes Karaoke
+LOCATION:Park Social dispensary, Alameda, CA
+DESCRIPTION:Join us for High Notes Karaoke every two weeks on Wednesday at Park Social dispensary in Alameda, CA!
+END:VEVENT
+END:VCALENDAR
