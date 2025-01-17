@@ -1,0 +1,14 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Your Organization//NONSGML v1.0//EN
+BEGIN:VEVENT
+UID:cal5@highnotes.info
+DTSTAMP:20250117T000000Z
+DTSTART;TZID=America/Los_Angeles:20250117T183000
+DTEND;TZID=America/Los_Angeles:20250117T203000
+RRULE:FREQ=WEEKLY;BYDAY=FR
+SUMMARY:High Notes Karaoke
+LOCATION:Park Social, 1222 Park Street, Alameda, CA
+DESCRIPTION:Join us for High Notes Karaoke every Friday at Park Social dispensary in Alameda, CA!
+END:VEVENT
+END:VCALENDAR
